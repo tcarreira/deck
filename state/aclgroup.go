@@ -90,7 +90,7 @@ func insertACLGroup(txn *memdb.Txn, aclGroup ACLGroup) error {
 	}
 	_, err = getACLGroup(txn, *aclGroup.Consumer.ID, *aclGroup.Group)
 	if err == nil {
-		return fmt.Errorf("inserting acl-group %v: %w", aclGroup.Console(), ErrAlreadyExists)
+		fmt.Printf("[SKIP] inserting acl-group %v: %v\n", aclGroup.Console(), ErrAlreadyExists)
 	} else if err != ErrNotFound {
 		return err
 	}

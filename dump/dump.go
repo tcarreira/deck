@@ -591,10 +591,12 @@ func GetAllBasicAuths(ctx context.Context,
 			return basicAuths, nil
 		}
 		if err != nil {
-			return nil, err
+			fmt.Printf("[SKIP] Error getting basicAuth: %v\n", err)
+			return basicAuths, nil
 		}
 		if err := ctx.Err(); err != nil {
-			return nil, err
+			fmt.Printf("[SKIP] Error on ctx, getting basicAuth: %v\n", err)
+			return basicAuths, nil
 		}
 		basicAuths = append(basicAuths, s...)
 		if nextopt == nil {

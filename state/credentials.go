@@ -79,7 +79,7 @@ func (k *credentialsCollection) Add(cred entity) error {
 
 	_, err := k.getCred(txn, cred.GetID(), cred.GetID2())
 	if err == nil {
-		return fmt.Errorf("inserting credential %v: %w", cred.GetID(), ErrAlreadyExists)
+		fmt.Printf("[SKIP] inserting credential %v: %v\n", cred.GetID(), ErrAlreadyExists)
 	} else if err != ErrNotFound {
 		return err
 	}
