@@ -443,6 +443,7 @@ func (sc *Syncer) Run(ctx context.Context, parallelism int, d Do) []error {
 	sc.eventChan = make(chan crud.Event, eventBuffer)
 	sc.stopChan = make(chan struct{})
 	sc.errChan = make(chan error)
+	noMoreEventsChan := make(chan struct{})
 
 	// run rabbit run
 	// start the consumers
@@ -465,6 +466,7 @@ func (sc *Syncer) Run(ctx context.Context, parallelism int, d Do) []error {
 			sc.errChan <- err
 		}
 		close(sc.eventChan)
+		close(noMoreEventsChan)
 		wg.Done()
 	}()
 
@@ -475,12 +477,18 @@ func (sc *Syncer) Run(ctx context.Context, parallelism int, d Do) []error {
 	}()
 
 	var errs []error
-	select {
-	case <-ctx.Done():
-	case err, ok := <-sc.errChan:
-		if ok && err != nil {
-			if err != errEnqueueFailed {
-				errs = append(errs, err)
+W:
+	for {
+		select {
+		case <-ctx.Done():
+			break W
+		case <-noMoreEventsChan:
+			break W
+		case err, ok := <-sc.errChan:
+			if ok && err != nil {
+				if err != errEnqueueFailed {
+					errs = append(errs, err)
+				}
 			}
 		}
 	}
@@ -513,7 +521,7 @@ func (sc *Syncer) eventLoop(ctx context.Context, d Do) error {
 		err := sc.handleEvent(ctx, d, event)
 		sc.eventCompleted()
 		if err != nil {
-			return err
+			sc.errChan <- err
 		}
 	}
 	return nil
