@@ -31,12 +31,17 @@ func GetContentFromFiles(filenames []string) (*Content, error) {
 	return getContent(filenames)
 }
 
+// GetForKonnect process the fileContent and renders a RawState and KonnectRawState
 func GetForKonnect(fileContent *Content, opt RenderConfig) (*utils.KongRawState, *utils.KonnectRawState, error) {
 	var builder stateBuilder
 	// setup
 	builder.targetContent = fileContent
 	builder.currentState = opt.CurrentState
 	builder.kongVersion = opt.KongVersion
+
+	if fileContent.Transform != nil && !*fileContent.Transform {
+		return nil, nil, fmt.Errorf("_transform: false is not supported")
+	}
 
 	kongState, konnectState, err := builder.build()
 	if err != nil {
@@ -53,6 +58,10 @@ func Get(fileContent *Content, opt RenderConfig) (*utils.KongRawState, error) {
 	builder.targetContent = fileContent
 	builder.currentState = opt.CurrentState
 	builder.kongVersion = opt.KongVersion
+
+	if fileContent.Transform != nil && !*fileContent.Transform {
+		return nil, fmt.Errorf("_transform: false is not supported")
+	}
 
 	state, _, err := builder.build()
 	if err != nil {
