@@ -35,7 +35,7 @@ func buildKong(kongState *KongState, raw *utils.KongRawState) error {
 	for _, c := range raw.Consumers {
 		err := kongState.Consumers.Add(Consumer{Consumer: *c})
 		if err != nil {
-			return fmt.Errorf("inserting consumer into state: %w", err)
+			fmt.Printf("[SKIP] inserting consumer into state: %v\n", err)
 		}
 	}
 	ensureConsumer := func(consumerID string) (bool, error) {
