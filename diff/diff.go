@@ -509,6 +509,7 @@ W:
 // Do is the worker function to sync the diff
 type Do func(a crud.Event) (crud.Arg, error)
 
+//nolint
 func (sc *Syncer) eventLoop(ctx context.Context, d Do) error {
 	for event := range sc.eventChan {
 		// Stop if program is terminated
