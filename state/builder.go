@@ -50,6 +50,9 @@ func buildKong(kongState *KongState, raw *utils.KongRawState) error {
 		return true, nil
 	}
 	for _, cred := range raw.KeyAuths {
+		if cred == nil || cred.Consumer == nil || cred.Consumer.ID == nil {
+			continue
+		}
 		ok, err := ensureConsumer(*cred.Consumer.ID)
 		if err != nil {
 			return err
@@ -63,6 +66,9 @@ func buildKong(kongState *KongState, raw *utils.KongRawState) error {
 		}
 	}
 	for _, cred := range raw.HMACAuths {
+		if cred == nil || cred.Consumer == nil || cred.Consumer.ID == nil {
+			continue
+		}
 		ok, err := ensureConsumer(*cred.Consumer.ID)
 		if err != nil {
 			return err
@@ -76,6 +82,9 @@ func buildKong(kongState *KongState, raw *utils.KongRawState) error {
 		}
 	}
 	for _, cred := range raw.JWTAuths {
+		if cred == nil || cred.Consumer == nil || cred.Consumer.ID == nil {
+			continue
+		}
 		ok, err := ensureConsumer(*cred.Consumer.ID)
 		if err != nil {
 			return err
@@ -89,6 +98,9 @@ func buildKong(kongState *KongState, raw *utils.KongRawState) error {
 		}
 	}
 	for _, cred := range raw.BasicAuths {
+		if cred == nil || cred.Consumer == nil || cred.Consumer.ID == nil {
+			continue
+		}
 		ok, err := ensureConsumer(*cred.Consumer.ID)
 		if err != nil {
 			return err
@@ -102,6 +114,9 @@ func buildKong(kongState *KongState, raw *utils.KongRawState) error {
 		}
 	}
 	for _, cred := range raw.Oauth2Creds {
+		if cred == nil || cred.Consumer == nil || cred.Consumer.ID == nil {
+			continue
+		}
 		ok, err := ensureConsumer(*cred.Consumer.ID)
 		if err != nil {
 			return err
@@ -115,6 +130,9 @@ func buildKong(kongState *KongState, raw *utils.KongRawState) error {
 		}
 	}
 	for _, cred := range raw.ACLGroups {
+		if cred == nil || cred.Consumer == nil || cred.Consumer.ID == nil {
+			continue
+		}
 		ok, err := ensureConsumer(*cred.Consumer.ID)
 		if err != nil {
 			return err
@@ -128,6 +146,9 @@ func buildKong(kongState *KongState, raw *utils.KongRawState) error {
 		}
 	}
 	for _, cred := range raw.MTLSAuths {
+		if cred == nil || cred.Consumer == nil || cred.Consumer.ID == nil {
+			continue
+		}
 		ok, err := ensureConsumer(*cred.Consumer.ID)
 		if err != nil {
 			return err
