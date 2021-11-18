@@ -200,7 +200,7 @@ func buildKong(kongState *KongState, raw *utils.KongRawState) error {
 	for _, p := range raw.Plugins {
 		err := kongState.Plugins.Add(Plugin{Plugin: *p})
 		if err != nil {
-			return fmt.Errorf("inserting plugins into state: %w", err)
+			fmt.Printf("[SKIP] inserting plugins into state: %v\n", err)
 		}
 	}
 
