@@ -79,10 +79,20 @@ configure Kong.`,
 					return err
 				}
 
-				rawState, err := dump.Get(ctx, wsClient, dumpConfig)
-				if err != nil {
+				var rawState *utils.KongRawState
+				isError := true
+				for iii := 1; iii < 10; iii++ {
+					rawState, err = dump.Get(ctx, wsClient, dumpConfig)
+					if err != nil {
+						fmt.Printf("[RETRY] reading configuration from Kong1: %v\n", err)
+						continue
+					}
+					break
+				}
+				if isError {
 					return fmt.Errorf("reading configuration from Kong: %w", err)
 				}
+
 				ks, err := state.Get(rawState)
 				if err != nil {
 					return fmt.Errorf("building state: %w", err)
@@ -101,11 +111,11 @@ configure Kong.`,
 			return nil
 		}
 
-		if yes, err := utils.ConfirmFileOverwrite(dumpCmdKongStateFile, dumpCmdStateFormat, assumeYes); err != nil {
-			return err
-		} else if !yes {
-			return nil
-		}
+		// if yes, err := utils.ConfirmFileOverwrite(dumpCmdKongStateFile, dumpCmdStateFormat, assumeYes); err != nil {
+		// 	return err
+		// } else if !yes {
+		// 	return nil
+		// }
 
 		// Kong OSS
 		// or Kong Enterprise single workspace
@@ -124,10 +134,21 @@ configure Kong.`,
 			}
 		}
 
-		rawState, err := dump.Get(ctx, wsClient, dumpConfig)
-		if err != nil {
+		var rawState *utils.KongRawState
+		isError := true
+		for iii := 1; iii < 10; iii++ {
+			rawState, err = dump.Get(ctx, wsClient, dumpConfig)
+			if err != nil {
+				fmt.Printf("[RETRY] reading configuration from Kong2: %v\n", err)
+			} else {
+				isError = false
+				break
+			}
+		}
+		if isError {
 			return fmt.Errorf("reading configuration from Kong: %w", err)
 		}
+
 		ks, err := state.Get(rawState)
 		if err != nil {
 			return fmt.Errorf("building state: %w", err)

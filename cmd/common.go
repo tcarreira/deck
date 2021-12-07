@@ -7,6 +7,7 @@ import (
 	"os"
 	"reflect"
 	"sort"
+	"time"
 
 	"github.com/blang/semver/v4"
 	"github.com/kong/deck/cprint"
@@ -59,11 +60,13 @@ func syncMain(ctx context.Context, filenames []string, dry bool, parallelism,
 	// read target file
 	targetContent, err := file.GetContentFromFiles(filenames)
 	if err != nil {
+		fmt.Println("DEBUG:: file.GetContentFromFiles(filenames)")
 		return err
 	}
 
 	rootClient, err := utils.GetKongClient(rootConfig)
 	if err != nil {
+		fmt.Println("DEBUG:: utils.GetKongClient(rootConfig)")
 		return err
 	}
 
@@ -98,32 +101,60 @@ func syncMain(ctx context.Context, filenames []string, dry bool, parallelism,
 	}
 	_ = sendAnalytics(cmd, kongVersion)
 
-	workspaceExists, err := workspaceExists(ctx, rootConfig, workspaceName)
-	if err != nil {
+	var workspaceExist bool
+	isError := true
+	for iii := 1; iii < 10; iii++ {
+		workspaceExist, err = workspaceExists(ctx, rootConfig, workspaceName)
+		if err != nil {
+			fmt.Println("[RETRY] DEBUG:: workspaceExists(ctx, rootConfig, workspaceName)")
+			time.Sleep(5 * time.Second)
+			continue
+		} else {
+			isError = false
+			break
+		}
+	}
+	if isError {
+		fmt.Println("DEBUG:: workspaceExists(ctx, rootConfig, workspaceName)")
 		return err
 	}
 
 	wsClient, err := utils.GetKongClient(wsConfig)
 	if err != nil {
+		fmt.Println("DEBUG:: utils.GetKongClient(wsConfig)")
 		return err
 	}
 
 	dumpConfig.SelectorTags, err = determineSelectorTag(*targetContent, dumpConfig)
 	if err != nil {
+		fmt.Println("DEBUG:: determineSelectorTag(*targetContent, dumpConfig)")
 		return err
 	}
 
 	// read the current state
 	var currentState *state.KongState
-	if workspaceExists {
-		currentState, err = fetchCurrentState(ctx, wsClient, dumpConfig)
-		if err != nil {
+	if workspaceExist {
+		isError := true
+		for iii := 1; iii < 10; iii++ {
+			currentState, err = fetchCurrentState(ctx, wsClient, dumpConfig)
+			if err != nil {
+				fmt.Println("[RETRY] DEBUG:: fetchCurrentState(ctx, wsClient, dumpConfig)")
+				time.Sleep(5 * time.Second)
+				continue
+			} else {
+				isError = false
+				break
+			}
+		}
+		if isError {
+			fmt.Println("DEBUG:: fetchCurrentState(ctx, wsClient, dumpConfig)")
 			return err
 		}
 	} else {
 		// inject empty state
 		currentState, err = state.NewKongState()
 		if err != nil {
+			fmt.Println("DEBUG:: state.NewKongState")
 			return err
 		}
 
@@ -131,6 +162,7 @@ func syncMain(ctx context.Context, filenames []string, dry bool, parallelism,
 		if !dry {
 			_, err = rootClient.Workspaces.Create(ctx, &kong.Workspace{Name: &wsConfig.Workspace})
 			if err != nil {
+				fmt.Println("DEBUG:: rootClient.Workspaces.Create")
 				return err
 			}
 		}
@@ -142,18 +174,22 @@ func syncMain(ctx context.Context, filenames []string, dry bool, parallelism,
 		KongVersion:  parsedKongVersion,
 	}, dumpConfig)
 	if err != nil {
+		fmt.Println("DEBUG:: Getting rawState")
 		return err
 	}
 	if err := checkForRBACResources(*rawState, dumpConfig.RBACResourcesOnly); err != nil {
+		fmt.Println("DEBUG:: checkForRBACResources")
 		return err
 	}
 	targetState, err := state.Get(rawState)
 	if err != nil {
+		fmt.Println("DEBUG:: state.Get(rawState)")
 		return err
 	}
 
 	totalOps, err := performDiff(ctx, currentState, targetState, dry, parallelism, delay, wsClient)
 	if err != nil {
+		fmt.Println("DEBUG:: performDiff(ctx, currentState, targetState, dry, parallelism, delay, wsClient)")
 		return err
 	}
 

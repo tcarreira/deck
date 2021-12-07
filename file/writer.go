@@ -57,7 +57,7 @@ func KongStateToFile(kongState *state.KongState, config WriteConfig) error {
 
 	err = populatePlugins(kongState, file, config)
 	if err != nil {
-		return err
+		fmt.Printf("[SKIP] populating Plugin: %v\n", err)
 	}
 
 	err = populateUpstreams(kongState, file, config)
@@ -346,7 +346,7 @@ func populatePlugins(kongState *state.KongState, file *Content,
 			cID := *p.Consumer.ID
 			consumer, err := kongState.Consumers.Get(cID)
 			if err != nil {
-				return err
+				return fmt.Errorf("PopulatingPlugin %v (%v) - Missing consumer %v\n", *p.Name, *p.ID, cID)
 			}
 			if !utils.Empty(consumer.Username) {
 				cID = *consumer.Username
@@ -358,7 +358,7 @@ func populatePlugins(kongState *state.KongState, file *Content,
 			sID := *p.Service.ID
 			service, err := kongState.Services.Get(sID)
 			if err != nil {
-				return err
+				return fmt.Errorf("PopulatingPlugin %v (%v) - Missing service %v\n", *p.Name, *p.ID, sID)
 			}
 			if !utils.Empty(service.Name) {
 				sID = *service.Name
@@ -370,7 +370,7 @@ func populatePlugins(kongState *state.KongState, file *Content,
 			rID := *p.Route.ID
 			route, err := kongState.Routes.Get(rID)
 			if err != nil {
-				return err
+				return fmt.Errorf("PopulatingPlugin %v (%v) - Missing route %v\n", *p.Name, *p.ID, rID)
 			}
 			if !utils.Empty(route.Name) {
 				rID = *route.Name

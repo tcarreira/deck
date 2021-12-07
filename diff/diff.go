@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -533,6 +534,12 @@ func (sc *Syncer) handleEvent(ctx context.Context, d Do, event crud.Event) error
 		res, err := d(event)
 		if err != nil {
 			err = fmt.Errorf("while processing event: %w", err)
+
+			var urlError *url.Error
+			if errors.As(err, &urlError) &&
+				urlError.Timeout() {
+				return err
+			}
 
 			var kongAPIError *kong.APIError
 			if errors.As(err, &kongAPIError) &&

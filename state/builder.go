@@ -110,7 +110,7 @@ func buildKong(kongState *KongState, raw *utils.KongRawState) error {
 		}
 		err = kongState.BasicAuths.Add(BasicAuth{BasicAuth: *cred})
 		if err != nil {
-			return fmt.Errorf("inserting basic-auth into state: %w", err)
+			fmt.Printf("[SKIP] inserting basic-auth into state: %v", err)
 		}
 	}
 	for _, cred := range raw.Oauth2Creds {
@@ -142,7 +142,7 @@ func buildKong(kongState *KongState, raw *utils.KongRawState) error {
 		}
 		err = kongState.ACLGroups.Add(ACLGroup{ACLGroup: *cred})
 		if err != nil {
-			return fmt.Errorf("inserting basic-auth into state: %w", err)
+			fmt.Printf("[SKIP] inserting basic-auth into state: %v", err)
 		}
 	}
 	for _, cred := range raw.MTLSAuths {
